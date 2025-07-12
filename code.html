@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>भरोसे वाली घड़ी - टेस्ट</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            text-align: center; 
+            background-color: #2c3e50; 
+            color: white; 
+            padding-top: 50px; 
+            touch-action: manipulation; /* Stops double-tap to zoom */
+        }
+        h1 { 
+            font-size: 4em; 
+            margin: 0; 
+        }
+        p { 
+            font-size: 1.2em; 
+        }
+        input[type="time"] { 
+            width: 80%; 
+            padding: 15px; 
+            font-size: 1.5em; 
+            border-radius: 10px; 
+            border: none; 
+            margin-top: 20px; 
+            box-sizing: border-box;
+        }
+        button { 
+            width: 80%; 
+            padding: 20px; 
+            font-size: 1.5em; 
+            background-color: #27ae60; 
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            margin-top: 20px; 
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        button:active {
+             background-color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <p>अभी समय है</p>
+    <h1 id="clock">00:00:00</h1>
+    
+    <p style="margin-top: 40px;">अलार्म सेट करें</p>
+    <input type="time" id="alarmTime">
+    <button id="setAlarmBtn">⏰ अलार्म लगाएं</button>
+    
+    <script>
+        // यह फंक्शन पेज लोड होते ही चलेगा
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const clockElement = document.getElementById('clock');
+            const alarmTimeInput = document.getElementById('alarmTime');
+            const setAlarmBtn = document.getElementById('setAlarmBtn');
+
+            // --- यह हिस्सा ब्राउज़र में काम करेगा ---
+            // घड़ी को हर सेकंड अपडेट करो
+            setInterval(() => {
+                const now = new Date();
+                clockElement.textContent = now.toLocaleTimeString('en-GB');
+            }, 1000);
+
+            // जब "अलार्म लगाएं" बटन दबे
+            setAlarmBtn.addEventListener('click', () => {
+                const time = alarmTimeInput.value;
+                if (!time) {
+                    alert('कृपया समय चुनें!');
+                    return;
+                }
+
+                // --- यह है महत्वपूर्ण हिस्सा ---
+                // हम जांच कर रहे हैं कि क्या यह असली ऐप का इंजन (Cordova) है
+                if (window.cordova && cordova.plugins && cordova.plugins.notification) {
+                    
+                    // अगर यह असली ऐप है, तो यह कोड चलेगा
+                    const [hour, minute] = time.split(':');
+                    const alarmDate = new Date();
+                    alarmDate.setHours(parseInt(hour, 10));
+                    alarmDate.setMinutes(parseInt(minute, 10));
+                    alarmDate.setSeconds(0);
+
+                    if (alarmDate < new Date()) {
+                        alarmDate.setDate(alarmDate.getDate() + 1);
+                    }
+                    
+                    cordova.plugins.notification.local.schedule({
+                        id: 1,
+                        title: 'उठो!',
+                        text: 'आपका अलार्म बज रहा है।',
+                        trigger: { at: alarmDate },
+                        foreground: true, // ऐप खुला होने पर भी दिखे
+                        sound: 'file://audio/alarm.mp3' // असली ऐप में हम आवाज़ ऐसे देंगे
+                    });
+                    
+                    alert('असली ऐप में अलार्म सेट हो गया है!');
+
+                } else {
+                    // अगर यह ब्राउज़र है, तो यह संदेश दिखेगा
+                    alert('यह सिर्फ एक डिज़ाइन है। अलार्म का असली फंक्शन .apk फ़ाइल में ही काम करेगा।');
+                    console.log('अलार्म सेट करने की कोशिश की गई, लेकिन यह ब्राउज़र है, असली ऐप नहीं।');
+                }
+            });
+
+        }, false);
+    </script>
+</body>
+</html>
