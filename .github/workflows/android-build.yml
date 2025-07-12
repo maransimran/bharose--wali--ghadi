@@ -40,4 +40,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: bharose-wali-ghadi-app
-          path: platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          path: platforms/android/app/
