@@ -1,0 +1,50 @@
+# इस पूरे कोड को कॉपी करके .github/workflows/android-build.yml फाइल में पेस्ट कर दें।
+
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main" ] # यह "main" ब्रांच पर कोड पुश होने पर चलेगा।
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # स्टेप 1: आपके GitHub रिपॉजिटरी के कोड को सर्वर पर लाता है
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # स्टेप 2: Node.js का वातावरण सेट करता है
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # स्टेप 3: कॉर्डोवा को इनस्टॉल करता है
+      - name: Install Cordova
+        run: npm install -g cordova
+
+      # स्टेप 4: एंड्रॉइड प्लेटफॉर्म को जोड़ता है (सही फोल्डर में)
+      - name: Add Android Platform
+        run: cordova platform add android@12
+        working-directory: ./bharose-wali-ghadi
+
+      # स्टेप 5: प्रोजेक्ट के प्लगइन्स को तैयार करता है (सही फोल्डर में)
+      - name: Install Plugins
+        run: cordova prepare android
+        working-directory: ./bharose-wali-ghadi
+
+      # स्टेप 6: APK फाइल बनाता है (सही फोल्डर में)
+      - name: Build APK
+        run: cordova build android --release
+        working-directory: ./bharose-wali-ghadi
+
+      # स्टेप 7: बने हुए APK को अपलोड करता है (नए वर्शन v4 के साथ)
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.apk
+          path: ./bharose-wali-ghadi/platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk
